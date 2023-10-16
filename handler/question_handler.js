@@ -2,7 +2,7 @@ const { default: mongoose } = require('mongoose')
 const form = require('../models/form')
 // const form = require('../models/form')
 
-const allowedType = ['text', 'radio', 'checkbox', 'dropdown']
+const allowedType = ['text', 'radio', 'checkbox', 'dropdown', 'email']
 
 const createQuestion = async (req, res) => {
     try {
@@ -53,9 +53,11 @@ const updateQuestion = async (req, res) => {
         //indexQuestion tsb didefinisikan di arrayFilter
         let field = {}
         if (req.body.hasOwnProperty('question')) {
+            console.log('masuk sini question : ', req.body.question)
             field['questions.$[indexQuestion].question'] = req.body.question
-        } else if (req.body.hasOwnProperty('required')) {
-            field['questions.$[indexQuestion].required'] = req.body.question
+        } if (req.body.hasOwnProperty('required')) {
+            console.log('masuk sini required : ', req.body.required)
+            field['questions.$[indexQuestion].required'] = req.body.required
         } if (req.body.hasOwnProperty('type')) {
             if (!allowedType.includes(req.body.type)) {
                 throw {
@@ -123,8 +125,8 @@ const getQuestions = async (req, res) => {
         if (!req.params.id) {
             throw { code: 400, message: 'REQUIRED_FORM_ID' }
         }
-        const targetForm = await form.findOne({ _id: req.params.id, userId: req.jwt.id})
-        if(!targetForm) {throw {code: 404, message: 'FORM_NOT_FOUND'}}
+        const targetForm = await form.findOne({ _id: req.params.id, userId: req.jwt.id })
+        if (!targetForm) { throw { code: 404, message: 'FORM_NOT_FOUND' } }
 
         return res.status(200).json({
             status: true,

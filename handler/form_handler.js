@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const form = require("../models/form");
+const user = require("../models/user");
 
 const createNewForm = async (req, res) => {
   try {
@@ -124,4 +125,40 @@ const index = async (req, res) => {
   }
 };
 
-module.exports = { createNewForm, showFormById, updateForm, deleteForm, index };
+//perlu dites terlebih dahulu
+const showFormsToUser = async (req, res) => {
+  try {
+    if (!req.params.id) {
+      throw { code: 400, message: "INVALID_FORM_ID" };
+    }
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      throw { code: 400, message: "INVALID_ID" };
+    }
+    const targetForm = await form.findOne({ _id: req.params.id});
+    if (!form) {
+      throw { code: 404, message: "FORM_NOT_FOUND" };
+    }
+    //untuk validasi user yg login punya permission invite untuk lihat form
+    if(req.jwt.id != targetForm.userId && targetForm.public === false){
+      const targetUser = await user.findOne({ _id: req.jwt.id})
+      if(!targetForm.invites.includes(targetUser.email)){
+        throw { code: 401, message: 'YOU_ARE_NOT_INVITED' }
+      }
+    }
+
+    targetForm.invites = []
+
+    return res.status(200).json({
+      status: true,
+      message: "SUCCESS_GET_FORM",
+      targetForm,
+    });
+  } catch (error) {
+    return res.status(error.code || 500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { createNewForm, showFormById, updateForm, deleteForm, index, showFormsToUser };

@@ -1,4 +1,4 @@
-const { createNewForm, showFormById, updateForm, deleteForm, index } = require("../handler/form_handler");
+const { createNewForm, showFormById, updateForm, deleteForm, index, showFormsToUser } = require("../handler/form_handler");
 const { createOption, updateOption, deleteOption } = require("../handler/option_handler");
 const { createQuestion, updateQuestion, deleteQuestion, getQuestions } = require("../handler/question_handler");
 const { authenticateJWT } = require("../middlewares/auth_middleware");
@@ -13,6 +13,7 @@ router.get('/:id/questions', authenticateJWT, getQuestions)
 //form
 router.post('/', authenticateJWT, createNewForm)
 router.get('/:id', authenticateJWT, showFormById)
+router.get('/:id/users', authenticateJWT, showFormsToUser)
 router.put('/:id', authenticateJWT, updateForm)
 router.delete('/:id', authenticateJWT, deleteForm)
 //option
