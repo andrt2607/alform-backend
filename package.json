@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "generate-swagger": "swagger-jsdoc -d swagger.json"
   },
   "keywords": [],
   "author": "Alif Andarta",
@@ -22,7 +23,9 @@
     "mongoose": "^7.5.4",
     "mongoose-paginate-v2": "^1.7.4",
     "morgan": "^1.10.0",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.2.0"

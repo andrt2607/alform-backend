@@ -15,6 +15,8 @@ app.use(cors({
     //tentukan url frontend
     // origin: 'http://localhost:8000'
     //origin: '*'
+    credentials: true,
+    exposedHeaders: ['set-cookie']
 }))
 //parse application/json
 app.use(bodyParser.json())
