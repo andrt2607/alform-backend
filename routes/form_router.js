@@ -1,6 +1,8 @@
 const { createNewForm, showFormById, updateForm, deleteForm, index, showFormsToUser } = require("../handler/form_handler");
+const { createInvite, deleteInvite, getEmailsInvited } = require("../handler/invite_handler");
 const { createOption, updateOption, deleteOption } = require("../handler/option_handler");
 const { createQuestion, updateQuestion, deleteQuestion, getQuestions } = require("../handler/question_handler");
+const { getResponses, summaries } = require("../handler/response_handler");
 const { authenticateJWT } = require("../middlewares/auth_middleware");
 
 var router = require("express").Router();
@@ -20,6 +22,12 @@ router.delete('/:id', authenticateJWT, deleteForm)
 router.post('/:id/questions/:questionId/options', authenticateJWT, createOption)
 router.put('/:id/questions/:questionId/options/:optionId', authenticateJWT, updateOption)
 router.delete('/:id/questions/:questionId/options/:optionId', authenticateJWT, deleteOption)
-
+//invites
+router.get('/:id/invites', authenticateJWT, getEmailsInvited)
+router.post('/:id/invites', authenticateJWT, createInvite)
+router.delete('/:id/invites', authenticateJWT, deleteInvite)
+//responses
+router.get('/responses/:id/lists', authenticateJWT, getResponses)
+router.get('/responses/:id/summaries', authenticateJWT, summaries)
 
 module.exports = router

@@ -12,11 +12,12 @@ const authenticateJWT = async (req, res, next) => {
         next()
     } catch (error) {
         if(error.message == 'jwt expired'){
+            error.code = 401
             error.message = 'ACCESS_TOKEN_EXPIRED'
         }else if(error.message == 'invalid signature' || error.message == 'jwt malformed' || error.message == 'jwt must be provided' || error.message == 'invalid token'){
             error.message = 'INVALID_ACCESS_TOKEN'
         }
-        return res.status(401).json({
+        return res.status(error.code || 500).json({
             status: false,
             message: 'AUTHENTICATE_FAILED'
         })

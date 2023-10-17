@@ -8,11 +8,11 @@ const jsonwebtoken = require('jsonwebtoken')
 const env = dotenv.config().parsed
 
 const generateAccessToken = async (payload) => {
-    return jsonwebtoken.sign(payload, env.JWT_ACCESS_TOKEN_SECRET, {expiresIn : env.JWT_ACCESS_TOKEN_EXPIRE_TIME})
+    return jsonwebtoken.sign(payload, env.JWT_ACCESS_TOKEN_SECRET, { expiresIn: env.JWT_ACCESS_TOKEN_EXPIRE_TIME })
 }
 
 const generateRefreshToken = async (payload) => {
-    return jsonwebtoken.sign(payload, env.JWT_REFRESH_TOKEN_SECRET, {expiresIn : env.JWT_REFRESH_TOKEN_EXPIRE_TIME})
+    return jsonwebtoken.sign(payload, env.JWT_REFRESH_TOKEN_SECRET, { expiresIn: env.JWT_REFRESH_TOKEN_EXPIRE_TIME })
 }
 
 const registerUser = async (req, res) => {
@@ -35,7 +35,7 @@ const registerUser = async (req, res) => {
                 code: 400, message: 'PASSWORD_NEED_6_CHARACTERS'
             }
         }
-        
+
         let { fullname, email, password, status } = req.body
         const emailExist = await user.findOne({ email: req.body.email })
         if (emailExist) {
@@ -52,15 +52,19 @@ const registerUser = async (req, res) => {
         const newUser = await user.create({
             fullname,
             email,
-            password:hash,
+            password: hash,
             status
         })
         console.log(newUser)
-        
 
+        const accessToken = await generateAccessToken({ id: newUser._id })
+        const refreshToken = await generateRefreshToken({ id: newUser._id })
         return res.status(200).json({
             message: 'REGISTER_SUCCESS',
-            data: newUser
+            fullname: newUser.fullname,
+            accessToken,
+            refreshToken
+            // data: newUser
         })
     } catch (error) {
         return res.status(500).json({
@@ -97,8 +101,17 @@ const loginUser = async (req, res) => {
                 code: 400, message: 'INVALID_PASSWORD'
             }
         }
-        const accessToken = await generateAccessToken({id: userFromDb._id})
-        const refreshToken = await generateRefreshToken({id: userFromDb._id})
+        const accessToken = await generateAccessToken({ id: userFromDb._id })
+        const refreshToken = await generateRefreshToken({ id: userFromDb._id })
+        //create accesstoken jwt inside cookie
+        const cookieOption = {
+            //untuk mengubah menjadi milisecond
+            expire: new Date(
+                Date.now() + env.JWT_ACCESS_TOKEN_EXPIRE_TIME * 24 * 60 * 60 * 1000
+            ),
+            httpOnly: true,
+        }
+        res.cookie("jwt", accessToken, cookieOption);
         return res.status(200).json({
             message: 'LOGIN_SUCCESS',
             data: userFromDb.fullname,
@@ -116,10 +129,10 @@ const loginUser = async (req, res) => {
 
 const refreshToken = async (req, res) => {
     try {
-        if(!req.body.refreshToken){
-            throw { code: 400, message: 'REFRESH_TOKEN_IS_REQUIRED'}
+        if (!req.body.refreshToken) {
+            throw { code: 400, message: 'REFRESH_TOKEN_IS_REQUIRED' }
         }
-    
+
         const verify = await jsonwebtoken.verify(req.body.refreshToken, env.JWT_REFRESH_TOKEN_SECRET)
 
         let payload = { id: verify.id }
@@ -132,9 +145,9 @@ const refreshToken = async (req, res) => {
             refreshToken
         })
     } catch (error) {
-        if(error.message == 'jwt expired'){
+        if (error.message == 'jwt expired') {
             error.message = 'REFRESH_TOKEN_EXPIRED'
-        }else if(error.message == 'invalid signature' || error.message == 'jwt malformed' || error.message == 'jwt must be provided' || error.message == 'invalid token'){
+        } else if (error.message == 'invalid signature' || error.message == 'jwt malformed' || error.message == 'jwt must be provided' || error.message == 'invalid token') {
             error.message = 'INVALID_REFRESH_TOKEN'
         }
         return res.status(500).json({
